@@ -41,4 +41,5 @@ public class TupleClient {
             System.err.println("Error file: " + e.getMessage());
         }
     }
+    public synchronized void 
 }

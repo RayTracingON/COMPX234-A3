@@ -10,7 +10,6 @@ public class TupleClient {
     
     public TupleClient(String filePaths) {
         this.filePath = filePaths;
-        // Constructor
     }
     public void start(){
         TupleClient client = new TupleClient("test-workload/client_1.txt");
@@ -18,7 +17,9 @@ public class TupleClient {
         int serverPort=51234;
         try (Socket socket = new Socket(serverAddress, serverPort)) {
             System.out.println("Connected to server: " + serverAddress + ":" + serverPort);
-            client.startRead(socket);      
+            client.startRead(socket);
+            socket.close();
+            System.out.println("Disconnected from server.");      
         } catch (IOException e) {
             System.err.println("Error connecting to server: " + e.getMessage());
         }

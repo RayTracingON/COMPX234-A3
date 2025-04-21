@@ -6,6 +6,8 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         TupleServer server = new TupleServer();
         Thread serverThread = new Thread(() -> server.start());
+        serverThread.start();
+        Thread.sleep(1000); // Wait for the server to start
         List<Thread> threads = new ArrayList<>();
         TupleClient [] clients = new TupleClient[10];
         for (int i = 0; i < clients.length; i++) {
@@ -20,6 +22,7 @@ public class Main {
         for (Thread thread : threads) {
             thread.join();
         }
-
+        serverThread.join();
+        System.out.println("All clients have finished.");
     }
 }

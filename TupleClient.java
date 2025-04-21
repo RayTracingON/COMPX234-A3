@@ -18,7 +18,6 @@ public class TupleClient {
         try (Socket socket = new Socket(serverAddress, serverPort)) {
             System.out.println("Connected to server: " + serverAddress + ":" + serverPort);
             client.startRead(socket);
-            socket.close();
             System.out.println("Disconnected from server.");      
         } catch (IOException e) {
             System.err.println("Error connecting to server: " + e.getMessage());
@@ -34,7 +33,7 @@ public class TupleClient {
             OutputStream outputStream = socket.getOutputStream();
             PrintWriter printWriter = new PrintWriter(outputStream); 
             String filePaths = filePath;
-            try (BufferedReader br = new BufferedReader(new FileReader(filePaths))) {
+            BufferedReader br = new BufferedReader(new FileReader(filePaths));
                 String line;
                 while ((line = br.readLine()) != null) {
                     String [] key;
@@ -47,7 +46,6 @@ public class TupleClient {
                         String formattedNumber = String.format("%03d",retuint);
                         if (parts[0].equals("READ")) {
                             returnString = formattedNumber+" R "+key1;
-                            
                         }
                         else{
                             returnString = formattedNumber+" G "+key1;
@@ -61,12 +59,12 @@ public class TupleClient {
                     }
                     printWriter.println(returnString);
                     printWriter.flush();
+                    System.out.println("Finished sending data to server.");
                 }
-            } catch (IOException e) {
-                System.err.println("Error file: " + e.getMessage());
-            }
+                br.close();
+                printWriter.close();
+                outputStream.close();
+                socket.close();
         }
         }   
-
-
 }

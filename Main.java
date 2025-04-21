@@ -19,10 +19,10 @@ public class Main {
         for (Thread thread : threads) {
             thread.start();
         }
+        serverThread.join();
         for (Thread thread : threads) {
             thread.join();
         }
-        serverThread.join();
         System.out.println("All clients have finished.");
     }
 }

@@ -2,6 +2,7 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
+
         String filePath = "test-workload/client_1.txt";
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -14,10 +15,10 @@ public class Main {
                 if (key.length==1) {
                     int retuint = key1.length()+6;
                     String formattedNumber = String.format("%03d",retuint);
-                    if (parts[0]=="READ"){
+                    if (parts[0].equals("READ")) {
                         returnString = formattedNumber+" R "+key1;
                     }
-                    else if (parts[0]=="GET"){
+                    else{
                         returnString = formattedNumber+" G "+key1;
                     }
                 }

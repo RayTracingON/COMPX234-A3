@@ -24,6 +24,7 @@ public class TupleClient {
             System.err.println("Error connecting to server: " + e.getMessage());
         }
     }
+
     public synchronized void startRead(Socket socket) throws IOException {
         if (socket == null || socket.isClosed()) {
             System.err.println("Socket is not connected.");
@@ -65,7 +66,7 @@ public class TupleClient {
                     printWriter.flush();
                     String serverResponse = serverReader.readLine();
                     if (serverResponse != null) {
-                        System.out.println("Server response: " + serverResponse);
+                        //System.out.println("Server response: " + serverResponse);
                     }
                 }}
                 catch (IOException e) {

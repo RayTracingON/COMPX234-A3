@@ -11,7 +11,7 @@ public class TupleServer {
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            serverSocket.setSoTimeout(5000);
+            serverSocket.setSoTimeout(20000);
             System.out.println("Waiting...");
     
             while (true) {
@@ -20,7 +20,7 @@ public class TupleServer {
                     int clientId = clientCounter.incrementAndGet();
                     System.out.println("Connecting: " + clientSocket.getInetAddress().getHostAddress() + " (Client #" + clientId + ")");
     
-                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId，database);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId,database);
                     new Thread(clientHandler).start();
                 } catch (SocketTimeoutException e) {
                     System.out.println("No new connections. Server is shutting down...");

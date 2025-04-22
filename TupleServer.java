@@ -17,10 +17,6 @@ public class TupleServer {
             System.out.println("Waiting...");
     
             while (true) {
-                if (activeHandlers.get() == 0 && started) {
-                    System.out.println("All clients have finished. Server is shutting down...");
-                    break;
-                }
                 try {
                     Socket clientSocket = serverSocket.accept();
                     int clientId = clientCounter.incrementAndGet();
@@ -32,6 +28,11 @@ public class TupleServer {
                 } catch (SocketTimeoutException e) {
                     System.out.println("No new connections. Server is shutting down...");
                     break;
+                }finally {
+                    if (activeHandlers.get() == 0 && started) {
+                        System.out.println("All clients have finished. Server is shutting down...");
+                        break;
+                    }
                 }
 
             }
@@ -64,7 +65,7 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
-                System.out.println("Client #" + clientId + " sent: " + clientMessage);
+                //System.out.println("Client #" + clientId + " sent: " + clientMessage);
 
                 writer.println("Response to Client #" + clientId + ": " + clientMessage); 
             }

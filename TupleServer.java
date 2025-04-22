@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TupleServer {
     private AtomicInteger clientCounter = new AtomicInteger(0); 
     private ConcurrentHashMap<String, String> database = new ConcurrentHashMap<>(); 
+    private AtomicInteger activeHandlers = new AtomicInteger(0); 
+    private boolean started=false;
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -15,17 +17,23 @@ public class TupleServer {
             System.out.println("Waiting...");
     
             while (true) {
+                if (activeHandlers.get() == 0 && started) {
+                    System.out.println("All clients have finished. Server is shutting down...");
+                    break;
+                }
                 try {
                     Socket clientSocket = serverSocket.accept();
                     int clientId = clientCounter.incrementAndGet();
                     System.out.println("Connecting: " + clientSocket.getInetAddress().getHostAddress() + " (Client #" + clientId + ")");
-    
-                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId,database);
+                    started=true;
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId,database, activeHandlers);
+                    activeHandlers.incrementAndGet();
                     new Thread(clientHandler).start();
                 } catch (SocketTimeoutException e) {
                     System.out.println("No new connections. Server is shutting down...");
                     break;
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -37,8 +45,10 @@ class ClientHandler implements Runnable {
     private Socket clientSocket;
     private int clientId; 
     private ConcurrentHashMap<String, String> database; 
+    private AtomicInteger activeHandlers;
  
-    public ClientHandler(Socket socket, int clientId, ConcurrentHashMap<String, String> database) {
+    public ClientHandler(Socket socket, int clientId, ConcurrentHashMap<String, String> database, AtomicInteger activeHandlers) {
+        this.activeHandlers = activeHandlers;
         this.database = database;
         this.clientSocket = socket;
         this.clientId = clientId;
@@ -63,6 +73,7 @@ class ClientHandler implements Runnable {
             e.printStackTrace();
         } finally {
             try {
+                activeHandlers.decrementAndGet();
                 clientSocket.close();
                 System.out.println("Client #" + clientId + " disconnected.");
             } catch (IOException e) {

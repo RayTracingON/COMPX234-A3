@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -35,9 +36,10 @@ public class TupleClient {
             String filePaths = filePath;
             BufferedReader br = new BufferedReader(new FileReader(filePaths));
             String line;
+            BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream())); 
             try {
                 while ((line = br.readLine()) != null) {
-                    //System.out.println("Read line: " + line);
+
                     String [] key;
                     String returnString="";
                     String [] parts = line.split(" ",2);
@@ -61,6 +63,10 @@ public class TupleClient {
                     }
                     printWriter.println(returnString);
                     printWriter.flush();
+                    String serverResponse = serverReader.readLine();
+                    if (serverResponse != null) {
+                        System.out.println("Server response: " + serverResponse);
+                    }
                 }}
                 catch (IOException e) {
                     System.err.println("Error during communication: " + e.getMessage());

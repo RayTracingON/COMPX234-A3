@@ -1,9 +1,13 @@
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger; 
 
 public class TupleServer {
     private AtomicInteger clientCounter = new AtomicInteger(0); 
+    private ConcurrentHashMap<String, String> database = new ConcurrentHashMap<>(); 
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -16,7 +20,7 @@ public class TupleServer {
                     int clientId = clientCounter.incrementAndGet();
                     System.out.println("Connecting: " + clientSocket.getInetAddress().getHostAddress() + " (Client #" + clientId + ")");
     
-                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId，database);
                     new Thread(clientHandler).start();
                 } catch (SocketTimeoutException e) {
                     System.out.println("No new connections. Server is shutting down...");
@@ -32,8 +36,10 @@ public class TupleServer {
 class ClientHandler implements Runnable {
     private Socket clientSocket;
     private int clientId; 
+    private ConcurrentHashMap<String, String> database; 
  
-    public ClientHandler(Socket socket, int clientId) {
+    public ClientHandler(Socket socket, int clientId, ConcurrentHashMap<String, String> database) {
+        this.database = database;
         this.clientSocket = socket;
         this.clientId = clientId;
     }
@@ -48,8 +54,9 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
-                //System.out.println("Client #" + clientId + " sent: " + clientMessage);
-                //writer.println("Response to Client #" + clientId + ": " + clientMessage); 
+                System.out.println("Client #" + clientId + " sent: " + clientMessage);
+
+                writer.println("Response to Client #" + clientId + ": " + clientMessage); 
             }
         } catch (IOException e) {
             System.err.println("Error handling client #" + clientId + ": " + e.getMessage());

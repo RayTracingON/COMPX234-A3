@@ -65,7 +65,29 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
-                //System.out.println("Client #" + clientId + " sent: " + clientMessage);
+                System.out.println("Client #" + clientId + " sent: " + clientMessage);
+                String [] key;
+                String [] parts = clientMessage.split(" ",3);
+                key= parts[1].split(" ",2);
+                String key1 = key[0];
+                if (key.length==1) {
+                    if (parts[1].equals("R")) {//read
+
+                    }
+                    else{//get
+                        String value = database.get(key1); 
+                    }
+                }
+                else{//put
+
+                    database.put(parts[2], key[1]); 
+
+                }
+
+
+
+
+
 
                 writer.println("Response to Client #" + clientId + ": " + clientMessage); 
             }

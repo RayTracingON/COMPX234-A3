@@ -9,7 +9,7 @@ public class Main {
         serverThread.start();
         Thread.sleep(1000); // Wait for the server to start
         List<Thread> threads = new ArrayList<>();
-        TupleClient [] clients = new TupleClient[10];
+        TupleClient [] clients = new TupleClient[2];
         for (int i = 0; i < clients.length; i++) {
             final int index = i; 
             clients[i] = new TupleClient("test-workload/client_" + (index+1) + ".txt");
@@ -20,6 +20,7 @@ public class Main {
             thread.start();
         }
         serverThread.join();
+        System.out.println("Server has finished.");
         for (Thread thread : threads) {
             thread.join();
         }

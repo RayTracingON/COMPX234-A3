@@ -7,7 +7,7 @@ public class TupleServer {
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            serverSocket.setSoTimeout(10000);
+            serverSocket.setSoTimeout(5000);
             System.out.println("Waiting...");
     
             while (true) {
@@ -48,16 +48,18 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
-                //System.out.println("Client #" + clientId + " sent: " + clientMessage);
-                writer.println("Response to Client #" + clientId + ": " + clientMessage); 
+                System.out.println("Client #" + clientId + " sent: " + clientMessage);
+                //writer.println("Response to Client #" + clientId + ": " + clientMessage); 
             }
         } catch (IOException e) {
+            System.err.println("Error handling client #" + clientId + ": " + e.getMessage());
             e.printStackTrace();
         } finally {
             try {
                 clientSocket.close();
                 System.out.println("Client #" + clientId + " disconnected.");
             } catch (IOException e) {
+                System.err.println("Error closing client socket: " + e.getMessage());
                 e.printStackTrace();
             }
         }

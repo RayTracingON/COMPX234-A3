@@ -12,7 +12,7 @@ public class TupleClient {
         this.filePath = filePaths;
     }
     public void start(){
-        TupleClient client = new TupleClient("test-workload/client_1.txt");
+        TupleClient client = new TupleClient(filePath);
         String serverAddress="localhost";
         int serverPort=51234;
         try (Socket socket = new Socket(serverAddress, serverPort)) {
@@ -34,8 +34,10 @@ public class TupleClient {
             PrintWriter printWriter = new PrintWriter(outputStream); 
             String filePaths = filePath;
             BufferedReader br = new BufferedReader(new FileReader(filePaths));
-                String line;
-                while ((line = br.readLine()) != "") {
+            String line;
+            try {
+                while ((line = br.readLine()) != null) {
+                    //System.out.println("Read line: " + line);
                     String [] key;
                     String returnString="";
                     String [] parts = line.split(" ",2);
@@ -59,12 +61,10 @@ public class TupleClient {
                     }
                     printWriter.println(returnString);
                     printWriter.flush();
-                }
-                br.close();
-                printWriter.close();
-                outputStream.close();
-                socket.close();
-                System.out.println("Finished sending data to server.");
+                }}
+                catch (IOException e) {
+                    System.err.println("Error during communication: " + e.getMessage());
+                } 
 
         }
         }   

@@ -35,7 +35,7 @@ public class TupleClient {
             String filePaths = filePath;
             BufferedReader br = new BufferedReader(new FileReader(filePaths));
                 String line;
-                while ((line = br.readLine()) != null) {
+                while ((line = br.readLine()) != "") {
                     String [] key;
                     String returnString="";
                     String [] parts = line.split(" ",2);
@@ -59,12 +59,13 @@ public class TupleClient {
                     }
                     printWriter.println(returnString);
                     printWriter.flush();
-                    System.out.println("Finished sending data to server.");
                 }
                 br.close();
                 printWriter.close();
                 outputStream.close();
                 socket.close();
+                System.out.println("Finished sending data to server.");
+
         }
         }   
 }

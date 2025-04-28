@@ -67,29 +67,38 @@ class ClientHandler implements Runnable {
             while ((clientMessage = reader.readLine()) != null) {
                 System.out.println("Client #" + clientId + " sent: " + clientMessage);
                 String [] key;
+                String returnstr="";
                 String [] parts = clientMessage.split(" ",3);
                 key= parts[1].split(" ",2);
                 String key1 = key[0];
                 if (key.length==1) {
                     if (parts[1].equals("R")) {//read
-
+                        if (database.containsKey(key1)) {
+                            String data=database.get(key1);
+                            int num = data.length()+16+key1.length();
+                            returnstr = String.format("%03d",num) + " OK ("+ key1 +", "+data+ ") read";
+                        } else {
+                            int num= key1.length()+23;
+                            returnstr = String.format("%03d",num) + " ERR "+ key1 +" already exists";
+                        }
+                        System.out.println("Client #" + clientId + " server sent: " + clientMessage);
+                        returnstr=database.get(key1);
+                        returnstr="";
                     }
                     else{//get
-                        String value = database.get(key1); 
+                        returnstr = database.get(key1); 
+                        database.remove(key1);
+                        returnstr="";
                     }
                 }
                 else{//put
 
                     database.put(parts[2], key[1]); 
-
+                    returnstr="";
                 }
 
-
-
-
-
-
-                writer.println("Response to Client #" + clientId + ": " + clientMessage); 
+                writer.println(returnstr); 
+                writer.flush();
             }
         } catch (IOException e) {
             System.err.println("Error handling client #" + clientId + ": " + e.getMessage());

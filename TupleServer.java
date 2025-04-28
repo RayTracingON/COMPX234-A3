@@ -83,9 +83,15 @@ class ClientHandler implements Runnable {
                         }
                     }
                     else{//get
-                        returnstr = database.get(key1); 
-                        database.remove(key1);
-                        returnstr="";
+                        if(database.containsKey(key1)) {
+                            String data=database.get(key1);
+                            int num = data.length()+19+key1.length();
+                            database.remove(key1);
+                            returnstr = String.format("%03d",num) + " OK ("+ key1 +", "+data+ ") removed";
+                        } else {
+                            int num= key1.length()+23;
+                            returnstr = String.format("%03d",num) + " ERR "+ key1 +" does not exist";
+                        }
                     }
                 }
                 else{//put

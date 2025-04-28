@@ -73,15 +73,15 @@ class ClientHandler implements Runnable {
                 String key1 = key[0];
                 if (key.length==1) {
                     if (parts[1].equals("R")) {//read
-                        if (database.containsKey(key1)) {
-                            String data=database.get(key1);
-                            int num = data.length()+16+key1.length();
-                            returnstr = String.format("%03d",num) + " OK ("+ key1 +", "+data+ ") read";
+                        if (database.containsKey(parts[2])) {
+                            String data=database.get(parts[2]);
+                            int num = data.length()+16+parts[2].length();
+                            returnstr = String.format("%03d",num) + " OK ("+ parts[2] +", "+data+ ") read";
                         } else {
-                            int num= key1.length()+23;
-                            returnstr = String.format("%03d",num) + " ERR "+ key1 +" already exists";
+                            int num= parts[2].length()+23;
+                            returnstr = String.format("%03d",num) + " ERR "+ parts[2] +" does not exist";
                         }
-                        System.out.println("Client #" + clientId + " server sent: " + clientMessage);
+                        System.out.println("Client #" + clientId + " server sent: " + returnstr);
                         returnstr=database.get(key1);
                         returnstr="";
                     }

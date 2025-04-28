@@ -1,7 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger; 
 
@@ -103,9 +101,7 @@ class ClientHandler implements Runnable {
                         int num= key1.length()+17+key[1].length();
                         returnstr = String.format("%03d",num) + " OK ("+ key1+", "+key[1] +" ) added";
                     }
-
                 }
-
                 writer.println(returnstr); 
                 writer.flush();
             }

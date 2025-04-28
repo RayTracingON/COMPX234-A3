@@ -56,7 +56,7 @@ class ClientHandler implements Runnable {
     }
  
     @Override
-    public void run() {
+    public synchronized void run() {
         try (
             InputStream input = clientSocket.getInputStream();
             OutputStream output = clientSocket.getOutputStream();

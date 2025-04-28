@@ -68,9 +68,9 @@ class ClientHandler implements Runnable {
                 System.out.println("Client #" + clientId + " sent: " + clientMessage);
                 String [] key;
                 String returnstr="";
-                String [] parts = clientMessage.split(" ",3);
-                key= parts[1].split(" ",2);
-                String key1 = key[0];
+                String [] parts = clientMessage.split(" ",3);//num type key
+                key= parts[2].split(" ",2);//key data
+                String key1 = key[0];//key
                 if (key.length==1) {
                     if (parts[1].equals("R")) {//read
                         if (database.containsKey(parts[2])) {
@@ -81,9 +81,6 @@ class ClientHandler implements Runnable {
                             int num= parts[2].length()+23;
                             returnstr = String.format("%03d",num) + " ERR "+ parts[2] +" does not exist";
                         }
-                        System.out.println("Client #" + clientId + " server sent: " + returnstr);
-                        returnstr=database.get(key1);
-                        returnstr="";
                     }
                     else{//get
                         returnstr = database.get(key1); 
@@ -92,9 +89,15 @@ class ClientHandler implements Runnable {
                     }
                 }
                 else{//put
+                    if(database.containsKey(key1)) {
+                        int num= key1.length()+23;
+                        returnstr = String.format("%03d",num) + " ERR "+ key1 +" already exists";
+                    } else {
+                        database.put(key1, key[1]); 
+                        int num= key1.length()+17+key[1].length();
+                        returnstr = String.format("%03d",num) + " OK ("+ key1+", "+key[1] +" ) added";
+                    }
 
-                    database.put(parts[2], key[1]); 
-                    returnstr="";
                 }
 
                 writer.println(returnstr); 

@@ -19,7 +19,8 @@ public class TupleClient {
         try (Socket socket = new Socket(serverAddress, serverPort)) {
             System.out.println("Connected to server: " + serverAddress + ":" + serverPort);
             client.startRead(socket);
-            System.out.println("Disconnected from server.");      
+            System.out.println("Disconnected from server.");
+            socket.close();      
         } catch (IOException e) {
             System.err.println("Error connecting to server: " + e.getMessage());
         }
@@ -68,7 +69,11 @@ public class TupleClient {
                     if (serverResponse != null) {
                         System.out.println("Server response: " + serverResponse);
                     }
-                }}
+                }
+                br.close();
+                printWriter.close();
+                serverReader.close();
+            }
                 catch (IOException e) {
                     System.err.println("Error during communication: " + e.getMessage());
                 } 

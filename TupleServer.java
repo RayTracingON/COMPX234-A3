@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger; 
-
+//server main class
 public class TupleServer {
     private AtomicInteger clientCounter = new AtomicInteger(0); 
     private ConcurrentHashMap<String, String> database = new ConcurrentHashMap<>(); 
@@ -32,14 +32,13 @@ public class TupleServer {
                         break;
                     }
                 }
-
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
-
+//handle client class
 class ClientHandler implements Runnable {
     private Socket clientSocket;
     private int clientId; 

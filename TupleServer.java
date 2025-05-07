@@ -8,12 +8,33 @@ public class TupleServer {
     private ConcurrentHashMap<String, String> database = new ConcurrentHashMap<>(); 
     private AtomicInteger activeHandlers = new AtomicInteger(0); 
     private boolean started=false;
+    private int tuplespace=0;
+    private int tuplesize=0;
+    public int keysize=0;
+    public int valuesize=0;
+    public int totaloperations=0;
+    public int totalread=0;
+    public int totalwrite=0;
+    public int totalget=0;
+    public void printSummary() {
+        System.out.println("Summary: " + clientCounter.get() + " clients connected, " + activeHandlers.get() + " active handlers.");
+    }
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setSoTimeout(20000);
             System.out.println("Waiting...");
-    
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(10000); // 每 10 秒执行一次
+                        printSummary(); // 输出概要信息
+                    } catch (InterruptedException e) {
+                        System.err.println("Summary thread interrupted.");
+                        break;
+                    }
+                }
+            }).start();
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
@@ -62,7 +83,7 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
-                System.out.println("Client #" + clientId + " sent: " + clientMessage);
+                //System.out.println("Client #" + clientId + " sent: " + clientMessage);
                 String [] key;
                 String returnstr="";
                 String [] parts = clientMessage.split(" ",3);//num type key

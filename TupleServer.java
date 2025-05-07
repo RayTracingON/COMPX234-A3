@@ -1,23 +1,50 @@
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger; 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong; 
 //server main class
 public class TupleServer {
     private AtomicInteger clientCounter = new AtomicInteger(0); 
     private ConcurrentHashMap<String, String> database = new ConcurrentHashMap<>(); 
     private AtomicInteger activeHandlers = new AtomicInteger(0); 
     private boolean started=false;
-    private int tuplespace=0;
-    private int tuplesize=0;
-    public int keysize=0;
-    public int valuesize=0;
-    public int totaloperations=0;
-    public int totalread=0;
-    public int totalwrite=0;
-    public int totalget=0;
+    private static AtomicInteger tuplenum=new AtomicInteger(0); 
+    private static AtomicLong cumulativeKeySizeOfSuccessfullyRead = new AtomicLong(0);
+    private static AtomicLong cumulativeValueSizeOfSuccessfullyRead = new AtomicLong(0); 
+    private static AtomicInteger totalOperations = new AtomicInteger(0);    
+    private static AtomicInteger totalReads = new AtomicInteger(0);   
+    private static AtomicInteger totalGets = new AtomicInteger(0);    
+    private static AtomicInteger totalPuts = new AtomicInteger(0);
+    private static AtomicInteger totalErrors = new AtomicInteger(0);
+
     public void printSummary() {
-        System.out.println("Summary: " + clientCounter.get() + " clients connected, " + activeHandlers.get() + " active handlers.");
+        int numTuples = tuplenum.get();
+
+        long totalSuccessfullyReadKeySize = cumulativeKeySizeOfSuccessfullyRead.get();
+        long totalSuccessfullyReadValueSize = cumulativeValueSizeOfSuccessfullyRead.get();
+        int successfulRetrievalsCount = numTuples;
+
+        double avgHistTupleSize = successfulRetrievalsCount > 0 ? (double) (totalSuccessfullyReadKeySize + totalSuccessfullyReadValueSize) / successfulRetrievalsCount : 0;
+        double avgHistKeySize = successfulRetrievalsCount > 0 ? (double) totalSuccessfullyReadKeySize / successfulRetrievalsCount : 0;
+        double avgHistValueSize = successfulRetrievalsCount > 0 ? (double) totalSuccessfullyReadValueSize / successfulRetrievalsCount : 0;
+
+        System.out.println("\n----- Tuple Space Summary -----");
+        System.out.println("Total clients connected: " + clientCounter.get());
+        System.out.println("Total operations attempted (R+G+P): " + totalOperations.get());
+        System.out.println("Total READ operations attempted: " + totalReads.get());
+        System.out.println("Total GET operations attempted: " + totalGets.get());
+        System.out.println("Total PUT operations attempted: " + totalPuts.get());
+        System.out.println("Total errors encountered: " + totalErrors.get());
+
+        System.out.println("\n--- Statistics for Successfully Retrieved Tuples (Cumulative) ---");
+        System.out.println("Total successful data retrievals (READs/GETs): " + successfulRetrievalsCount);
+        System.out.printf("Average tuple size (of all retrieved tuples): %.2f chars\n", avgHistTupleSize);
+        System.out.printf("Average key size (of all retrieved tuples): %.2f chars\n", avgHistKeySize);
+        System.out.printf("Average value size (of all retrieved tuples): %.2f chars\n", avgHistValueSize);
+        System.out.println("-----------------------------\n");
     }
     public void start() {
         int port = 51234;
@@ -27,7 +54,10 @@ public class TupleServer {
             new Thread(() -> {
                 while (true) {
                     try {
-                        Thread.sleep(10000); // 每 10 秒执行一次
+                        if (activeHandlers.get() == 0 && started) {
+                            break;
+                        }
+                        Thread.sleep(1000); // 每 10 秒执行一次
                         printSummary(); // 输出概要信息
                     } catch (InterruptedException e) {
                         System.err.println("Summary thread interrupted.");
@@ -41,7 +71,8 @@ public class TupleServer {
                     int clientId = clientCounter.incrementAndGet();
                     System.out.println("Connecting: " + clientSocket.getInetAddress().getHostAddress() + " (Client #" + clientId + ")");
                     started=true;
-                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId,database, activeHandlers);
+                    ClientHandler clientHandler = new ClientHandler(clientSocket, clientId, database, activeHandlers,
+                            totalOperations, totalReads, totalGets, totalPuts, totalErrors, cumulativeKeySizeOfSuccessfullyRead, cumulativeValueSizeOfSuccessfullyRead,tuplenum);
                     activeHandlers.incrementAndGet();
                     new Thread(clientHandler).start();
                 } catch (SocketTimeoutException e) {
@@ -65,12 +96,32 @@ class ClientHandler implements Runnable {
     private int clientId; 
     private ConcurrentHashMap<String, String> database; 
     private AtomicInteger activeHandlers;
+    private AtomicInteger totalOperations;
+    private AtomicInteger totalReads;
+    private AtomicInteger totalGets;
+    private AtomicInteger totalPuts;
+    private AtomicInteger totalErrors;
+    private AtomicInteger tuplenum; 
+    private AtomicLong cumulativeKeySizeOfSuccessfullyRead;
+    private AtomicLong cumulativeValueSizeOfSuccessfullyRead;
  
-    public ClientHandler(Socket socket, int clientId, ConcurrentHashMap<String, String> database, AtomicInteger activeHandlers) {
-        this.activeHandlers = activeHandlers;
-        this.database = database;
+    public ClientHandler(Socket socket, int clientId, ConcurrentHashMap<String, String> database, AtomicInteger activeHandlers,
+                         AtomicInteger totalOperations, AtomicInteger totalReads, AtomicInteger totalGets,
+                         AtomicInteger totalPuts, AtomicInteger totalErrors,AtomicLong cumulativeKeySizeOfSuccessfullyRead,AtomicLong cumulativeValueSizeOfSuccessfullyRead,AtomicInteger tuplenum) { // 构造函数更新
+        
         this.clientSocket = socket;
         this.clientId = clientId;
+        this.database = database;
+        this.activeHandlers = activeHandlers;
+        // 初始化新增的成员变量
+        this.totalOperations = totalOperations;
+        this.totalReads = totalReads;
+        this.totalGets = totalGets;
+        this.totalPuts = totalPuts;
+        this.totalErrors = totalErrors;
+        this.tuplenum = tuplenum;
+        this.cumulativeKeySizeOfSuccessfullyRead = cumulativeKeySizeOfSuccessfullyRead;
+        this.cumulativeValueSizeOfSuccessfullyRead = cumulativeValueSizeOfSuccessfullyRead;
     }
  
     @Override
@@ -83,6 +134,7 @@ class ClientHandler implements Runnable {
         ) {
             String clientMessage;
             while ((clientMessage = reader.readLine()) != null) {
+                tuplenum.incrementAndGet();
                 //System.out.println("Client #" + clientId + " sent: " + clientMessage);
                 String [] key;
                 String returnstr="";
@@ -91,32 +143,44 @@ class ClientHandler implements Runnable {
                 String key1 = key[0];//key
                 if (key.length==1) {
                     if (parts[1].equals("R")) {//read
+                        totalReads.incrementAndGet();
                         if (database.containsKey(parts[2])) {
+                            
                             String data=database.get(parts[2]);
+                            cumulativeKeySizeOfSuccessfullyRead.addAndGet(parts[2].length());
+                            cumulativeValueSizeOfSuccessfullyRead.addAndGet(data.length());
                             int num = data.length()+16+parts[2].length();
                             returnstr = String.format("%03d",num) + " OK ("+ parts[2] +", "+data+ ") read";
+                            totalOperations.incrementAndGet();
                         } else {
                             int num= parts[2].length()+23;
                             returnstr = String.format("%03d",num) + " ERR "+ parts[2] +" does not exist";
+                            totalErrors.incrementAndGet();
                         }
                     }
                     else{//get
+                        totalGets.incrementAndGet();
                         if(database.containsKey(key1)) {
+                            totalOperations.incrementAndGet();
                             String data=database.get(key1);
                             int num = data.length()+19+key1.length();
                             database.remove(key1);
                             returnstr = String.format("%03d",num) + " OK ("+ key1 +", "+data+ ") removed";
                         } else {
+                            totalErrors.incrementAndGet();
                             int num= key1.length()+23;
                             returnstr = String.format("%03d",num) + " ERR "+ key1 +" does not exist";
                         }
                     }
                 }
                 else{//put
+                    totalPuts.incrementAndGet();
                     if(database.containsKey(key1)) {
+                        totalErrors.incrementAndGet();
                         int num= key1.length()+23;
                         returnstr = String.format("%03d",num) + " ERR "+ key1 +" already exists";
                     } else {
+                        totalOperations.incrementAndGet();
                         database.put(key1, key[1]); 
                         int num= key1.length()+17+key[1].length();
                         returnstr = String.format("%03d",num) + " OK ("+ key1+", "+key[1] +" ) added";

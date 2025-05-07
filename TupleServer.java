@@ -1,8 +1,6 @@
 import java.io.*;
 import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong; 
 //server main class
@@ -57,8 +55,8 @@ public class TupleServer {
                         if (activeHandlers.get() == 0 && started) {
                             break;
                         }
-                        Thread.sleep(1000); // 每 10 秒执行一次
-                        printSummary(); // 输出概要信息
+                        Thread.sleep(1000); 
+                        printSummary(); 
                     } catch (InterruptedException e) {
                         System.err.println("Summary thread interrupted.");
                         break;

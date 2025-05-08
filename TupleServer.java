@@ -40,14 +40,15 @@ public class TupleServer {
         System.out.printf("Average key size: %.2f chars\n", avgKeySize);
         System.out.printf("Average value size: %.2f chars\n", avgValueSize);
         System.out.println("Total clients connected: " + clientCounter.get());
-        // System.out.println("Active client handlers: " + activeHandlers.get()); // 可以保留，如果需要
         System.out.println("Total operations: " + totalOperations.get());
         System.out.println("Total READs: " + totalReads.get());
         System.out.println("Total GETs: " + totalGets.get());
         System.out.println("Total PUTs: " + totalPuts.get());
         System.out.println("Total errors: " + totalErrors.get());
         System.out.println("-----------------------------\n");
+        System.out.println("-----------------------------\n");
     }
+
     public void start() {
         int port = 51234;
         try (ServerSocket serverSocket = new ServerSocket(port)) {

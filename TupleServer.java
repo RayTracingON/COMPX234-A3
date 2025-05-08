@@ -141,9 +141,8 @@ class ClientHandler implements Runnable {
                 if (key.length==1) {
                     if (parts[1].equals("R")) {//read
                         totalReads.incrementAndGet();
-                        if (database.containsKey(parts[2])) {
-                            
-                            String data=database.get(parts[2]);
+                        String data=database.get(parts[2]);
+                        if (data != null) {
                             int num = data.length()+16+parts[2].length();
                             returnstr = String.format("%03d",num) + " OK ("+ parts[2] +", "+data+ ") read";
                         } else {
@@ -154,8 +153,8 @@ class ClientHandler implements Runnable {
                     }
                     else{//get
                         totalGets.incrementAndGet();
-                        if(database.containsKey(key1)) {
-                            String data=database.get(key1);
+                        String data=database.get(parts[2]);
+                        if(data != null) {
                             int num = data.length()+19+key1.length();
                             database.remove(key1);
                             returnstr = String.format("%03d",num) + " OK ("+ key1 +", "+data+ ") removed";
@@ -168,7 +167,8 @@ class ClientHandler implements Runnable {
                 }
                 else{//put
                     totalPuts.incrementAndGet();
-                    if(database.containsKey(key1)) {
+                    String data=database.get(parts[2]);
+                    if(data != null) {
                         totalErrors.incrementAndGet();
                         int num= key1.length()+23;
                         returnstr = String.format("%03d",num) + " ERR "+ key1 +" already exists";

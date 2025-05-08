@@ -67,7 +67,7 @@ public class TupleClient {
                     printWriter.flush();
                     String serverResponse = serverReader.readLine();
                     if (serverResponse != null) {
-                        //System.out.println("Server response: " + serverResponse);
+                        System.out.println("Server response: " + serverResponse);
                     }
                 }
                 br.close();
